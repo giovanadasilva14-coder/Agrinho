@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFazenda: O Desafio da Sustentabilidade</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --secondary: #2196f3;
+            --danger: #f44336;
+            --dark: #333;
+            --light: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #e8f5e9;
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-style: italic;
+            color: #555;
+        }
+
+        .game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .status-bar {
+            width: 45%;
+        }
+
+        .status-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar-outer {
+            background: #ddd;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .bar-inner {
+            height: 100%;
+            width: 50%;
+            transition: width 0.5s ease, background-color 0.3s;
+        }
+
+        #prod-bar { background-color: var(--secondary); }
+        #env-bar { background-color: var(--primary-light); }
+
+        .card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #fafafa;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-option {
+            background-color: #fff;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            text-align: left;
+        }
+
+        .btn-option:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-action {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-action:hover {
+            filter: brightness(1.1);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        #score-board {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        .text-success { color: var(--primary); }
+        .text-danger { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>EcoFazenda</h1>
+        <p>Agro forte, futuro sustentável</p>
+    </header>
+
+    <div class="game-container">
+        
+        <div id="start-screen" class="screen active">
+            <h2>Bem-vindo, Produtor!</h2>
+            <p style="margin: 20px 0; line-height: 1.6;">
+                Sua missão é gerenciar uma propriedade rural. Tome decisões estratégicas para manter sua <strong>Produção Agrícola</strong> alta sem destruir o <strong>Meio Ambiente</strong>. Se qualquer um dos níveis zerar, o jogo acaba!
+            </p>
+            <button class="btn-action" onclick="startGame()">Iniciar Desafio</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div id="score-board">Decisões Tomadas: <span id="score">0</span></div>
+            
+            <div class="status-container">
+                <div class="status-bar">
+                    <div class="status-label"><span>🚜 Produção</span> <span id="prod-val">50%</span></div>
+                    <div class="bar-outer"><div id="prod-bar" class="bar-inner"></div></div>
+                </div>
+                <div class="status-bar">
+                    <div class="status-label"><span>🌱 Ambiente</span> <span id="env-val">50%</span></div>
+                    <div class="bar-outer"><div id="env-bar" class="bar-inner"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 id="question-text">Carregando dilema...</h3>
+            </div>
+
+            <div class="options-container" id="options-box">
+                </div>
+            
+            <div id="feedback-text" class="feedback"></div>
+        </div>
+
+        <div id="over-screen" class="screen">
+            <h2 id="over-title" class="text-danger">Fim de Jogo!</h2>
+            <p id="over-reason" style="margin: 20px 0; line-height: 1.6;"></p>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">Você conseguiu tomar <strong id="final-score">0</strong> decisões equilibradas.</p>
+            <button class="btn-action" onclick="startGame()">Jogar Novamente</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Banco de dados dos dilemas/perguntas do jogo
+        const dilemmas = [
+            {
+                q: "Pragas estão atacando a plantação de soja. O que fazer?",
+                options: [
+                    { text: "Aplicar defensivos químicos pesados imediatamente.", prod: 25, env: -25 },
+                    { text: "Adotar o Manejo Integrado de Pragas (MIP) e controle biológico.", prod: 10, env: 10 }
+                ]
+            },
+            {
+                q: "O período de seca começou. Como gerenciar a irrigação?",
+                options: [
+                    { text: "Ligar os pivôs centrais ao máximo nos horários mais quentes.", prod: 15, env: -20 },
+                    { text: "Implementar gotejamento subterrâneo e irrigar à noite.", prod: 5, env: 15 }
+                ]
+            },
+            {
+                q: "Você precisa expandir a área de pastagem do gado. Qual estratégia?",
+                options: [
+                    { text: "Desmatar uma parte da reserva legal da fazenda.", prod: 20, env: -30 },
+                    { text: "Recuperar pastagens degradadas através da Integração Lavoura-Pecuária (ILPF).", prod: 15, env: 15 }
+                ]
+            },
+            {
+                q: "O que fazer com os restos vegetais após a colheita do milho?",
+                options: [
+                    { text: "Realizar uma queimada controlada para limpar o terreno rápido.", prod: 10, env: -25 },
+                    { text: "Fazer o Plantio Direto, deixando a palhada cobrindo o solo.", prod: 10, env: 20 }
+                ]
+            },
+            {
+                q: "As embalagens de agrotóxicos usados estão acumuladas. Destino?",
+                options: [
+                    { text: "Queimar ou enterrar nos fundos da propriedade.", prod: 0, env: -20 },
+                    { text: "Realizar a tríplice lavagem e devolver em um posto de recebimento.", prod: 5, env: 15 }
+                ]
+            },
+            {
+                q: "Fontes de energia para as instalações da fazenda:",
+                options: [
+                    { text: "Continuar dependendo apenas da rede elétrica convencional de carvão/diesel.", prod: 5, env: -5 },
+                    { text: "Instalar painéis solares utilizando o espaço dos telhados dos galpões.", prod: 10, env: 15 }
+                ]
+            }
+        ];
+
+        // Estado do Jogo
+        let production = 50;
+        let environment = 50;
+        let score = 0;
+        let availableDilemmas = [];
+
+        function startGame() {
+            production = 50;
+            environment = 50;
+            score = 0;
+            availableDilemmas = [...dilemmas];
+            
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('over-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            
+            updateBars();
+            nextTurn();
+        }
+
+        function updateBars() {
+            // Garante limites entre 0 e 100
+            production = Math.max(0, Math.min(100, production));
+            environment = Math.max(0, Math.min(100, environment));
+
+            // Atualiza visual
+            document.getElementById('prod-bar').style.width = production + '%';
+            document.getElementById('prod-val').innerText = production + '%';
+            document.getElementById('env-bar').style.width = environment + '%';
+            document.getElementById('env-val').innerText = environment + '%';
+            document.getElementById('score').innerText = score;
+
+            // Alertas visuais de perigo
+            document.getElementById('prod-bar').style.backgroundColor = production < 25 ? 'var(--danger)' : 'var(--secondary)';
+            document.getElementById('env-bar').style.backgroundColor = environment < 25 ? 'var(--danger)' : 'var(--primary-light)';
+        }
+
+        function nextTurn() {
+            document.getElementById('feedback-text').innerText = "";
+
+            // Verifica condições de derrota/vitória
+            if (production <= 0) {
+                gameOver("Sua fazenda faliu! A produção chegou a zero e você não conseguiu manter o negócio ativo.");
+                return;
+            }
+            if (environment <= 0) {
+                gameOver("Desastre Ambiental! Os recursos naturais da sua fazenda se esgotaram, o solo degradou e a fiscalização interditou a propriedade.");
+                return;
+            }
+
+            // Se esgotarem as perguntas, reinicia a lista para manter o jogo rodando
+            if (availableDilemmas.length === 0) {
+                availableDilemmas = [...dilemmas];
+            }
+
+            // Seleciona um dilema aleatório
+            const randomIndex = Math.floor(Math.random() * availableDilemmas.length);
+            const currentDilema = availableDilemmas[randomIndex];
+            
+            // Remove para não repetir imediatamente
+            availableDilemmas.splice(randomIndex, 1);
+
+            // Renderiza na tela
+            document.getElementById('question-text').innerText = currentDilema.q;
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = '';
+
+            currentDilema.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt.text;
+                btn.onclick = () => makeChoice(opt.prod, opt.env);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function makeChoice(pMod, eMod) {
+            production += pMod;
+            environment += eMod;
+            score++;
+            
+            updateBars();
+            
+            // Pequeno delay para o jogador ver o impacto nas barras antes da próxima pergunta
+            const feedback = document.getElementById('feedback-text');
+            if(eMod > 0) {
+                feedback.className = "feedback text-success";
+                feedback.innerText = "Bela escolha sustentável!";
+            } else {
+                feedback.className = "feedback text-danger";
+                feedback.innerText = "A produção aumentou, mas o ambiente sofreu impacto.";
+            }
+
+            setTimeout(nextTurn, 1200);
+        }
+
+        function gameOver(reason) {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('over-screen').classList.add('active');
+            document.getElementById('over-reason').innerText = reason;
+            document.getElementById('final-score').innerText = score;
+        }
+    </script>
+</body>
+</html>
